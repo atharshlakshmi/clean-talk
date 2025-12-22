@@ -1,2 +1,18 @@
+# Weights & Biases
+wandb/
+.wandb/
+
+# Secret keys
 .env
-project1
+
+# Environment file
+venv
+
+# Data and models
+data/raw/*
+data/processed/*
+models/*.pth
+models/*.bin
+
+# Python cache
+__pycache__/
