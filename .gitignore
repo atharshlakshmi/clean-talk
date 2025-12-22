@@ -1,7 +1,3 @@
-# Weights & Biases
-wandb/
-.wandb/
-
 # Secret keys
 .env
 
