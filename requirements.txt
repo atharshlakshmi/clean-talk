@@ -3,3 +3,5 @@ pandas
 datasets
 seaborn
 kagglehub
+scikit-learn
+matplotlib
