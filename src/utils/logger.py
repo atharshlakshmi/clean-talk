@@ -77,28 +77,3 @@ class Logger():
         
         return best_epoch_data
 
-
-# CHECKING
-logger = Logger('happy.csv')
-metrics1 = {
-    'epoch': 0,
-    'train_loss': 0.1,
-    'val_loss': 0.1,
-    'accuracy': 0.5,
-    'f1_score': 0.5,
-    'lr': 0.8
-}
-
-metrics2 = {
-    'epoch':1,
-    'train_loss': 0.2,
-    'val_loss': 0.3,
-    'accuracy': 0.4,
-    'f1_score': 0.2,
-    'lr': 0.7
-}
-
-logger.log(metrics1)
-logger.log(metrics2)
-logger.end()
-logger.visualise()

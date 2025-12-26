@@ -5,3 +5,5 @@ seaborn
 kagglehub
 scikit-learn
 matplotlib
+torch
+transformers

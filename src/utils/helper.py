@@ -52,3 +52,5 @@ def length_aware_sample(df, target_size):
         balanced_chunks.append(cat_group.head(target_size))
         
     return pd.concat(balanced_chunks).sample(frac=1, random_state=42).reset_index(drop=True)
+
+

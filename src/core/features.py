@@ -51,9 +51,8 @@ def merge_data(aegis, jailbreak):
     combined = pd.concat([aegis, jailbreak])
     min_class_size = combined['label'].value_counts().min()
 
-    # Select all columns except the grouping one manually
     balanced_df = combined.groupby('label', group_keys=False)[['prompt', 'label']].apply(
-        lambda x: x.sample(min_class_size, random_state=42)
+        lambda x: x.sample(2000, random_state=42)
     ).reset_index(drop=True)
 
 
