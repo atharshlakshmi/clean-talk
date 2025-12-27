@@ -7,3 +7,6 @@ scikit-learn
 matplotlib
 torch
 transformers
+fastapi
+uvicorn
+streamlit

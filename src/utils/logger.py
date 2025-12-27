@@ -11,11 +11,11 @@ class Logger():
     def __init__(self, file_name):
         self.file_name = file_name
 
-        self.full_path = home / "downloads/project1/reports/experiment_logs" / file_name
+        self.full_path = home / "reports/experiment_logs" / file_name
 
         self.history = []
 
-        self.headers = ['epoch', 'train_loss', 'val_loss', 'accuracy', 'f1_score', 'lr']
+        self.headers = ['epoch', 'train_loss', 'train_f1', 'val_loss', 'val_f1', 'accuracy', 'lr']
         
         
         with open(self.full_path, mode='w', newline='') as f:
@@ -27,7 +27,7 @@ class Logger():
         self.history.append(metrics)
         
         # 2. Atomic write to CSV (protects data if training crashes)
-        with open(self.file_name, mode='a', newline='') as f:
+        with open(self.full_path, mode='a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=self.headers)
             writer.writerow(metrics)
             
@@ -39,9 +39,13 @@ class Logger():
             return
 
         df = pd.DataFrame(self.history)
+        max_epoch = int(df['epoch'].max())
+        lr = df['lr'].iloc[0]
         
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-        
+        fig.suptitle(f'Training Results - LR: {lr}, Max Epoch: {max_epoch}', fontsize=14, fontweight='bold')
+
+
         # Loss curves (essential for detecting overfitting)
         ax1.plot(df['epoch'], df['train_loss'], label='Train Loss', color='green', marker='o')
         ax1.plot(df['epoch'], df['val_loss'], label='Val Loss', color='orange', marker='o')
@@ -53,7 +57,7 @@ class Logger():
         
         #Accuracy/F1 Change
         ax2.plot(df['epoch'], df['accuracy'], label='Accuracy', color='green', marker='s')
-        ax2.plot(df['epoch'], df['f1_score'], label='F1 Score', color='orange', marker='s')
+        ax2.plot(df['epoch'], df['val_f1'], label='Val F1 Score', color='orange', marker='s')
         ax2.set_title('Metric Performance')
         ax2.set_xlabel('Epoch')
         ax2.set_ylabel('Score')
@@ -68,11 +72,11 @@ class Logger():
             return None
             
         # Find the row with the highest f1_score
-        best_epoch_data = max(self.history, key=lambda x: x['f1_score'])
+        best_epoch_data = max(self.history, key=lambda x: x['val_f1'])
         
         print("\n--- Final Training Summary ---")
         print(f"Best Epoch: {best_epoch_data['epoch']}")
-        print(f"Max F1 Score: {best_epoch_data['f1_score']:.4f}")
+        print(f"Max Val F1 Score: {best_epoch_data['val_f1']:.4f}")
         print(f"Final Val Loss: {best_epoch_data['val_loss']:.4f}")
         
         return best_epoch_data

@@ -5,10 +5,9 @@
 venv
 
 # Data and models
+models/*
 data/raw/*
 data/processed/*
-models/*.pth
-models/*.bin
 
 # Python cache
 __pycache__/

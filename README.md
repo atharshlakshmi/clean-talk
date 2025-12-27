@@ -5,6 +5,12 @@ python -m venv venv
 pip install -r requirements.txt
 
 ```
+on different terminals:
+```
+python src/api/main.py
+streamlit run src/app.py
+
+```
 
 Tools used
 - Distilbert
