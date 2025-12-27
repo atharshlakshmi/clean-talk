@@ -10,3 +10,6 @@ transformers
 fastapi
 uvicorn
 streamlit
+pinecone
+sentence-transformers
+openai

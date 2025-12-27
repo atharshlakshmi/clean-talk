@@ -2,7 +2,14 @@
 
 A safety guardrail system that classifies prompts and evaluates policy compliance. Takes a prompt and determines if it's safe or attempting a jailbreak, then retrieves relevant policies and judges whether the content complies with safety guidelines.
 
-Note: This is an exploratory project done by Atharshlakshmi Vijayakumar. The aim of this project is to learn tools and frameworks that are commonly use in AI.
+Possible use cases: 
+1. Preventing misuse of AI chatbots by limiting filtering prompts sent to the LLM.
+2. Moderating ChatBot behaviour by setting rules that dynamically get included in the prompts.
+Benefits: Reduce wastage in computes and misuse of AI tools.
+
+This project has been deployed on Streamlit! Try out the implementation [here.]()
+
+Note: This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly use in AI.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -25,7 +32,9 @@ Clean Talk is a two-stage safety evaluation system:
    - `unsafe` - Unsafe prompts
    - `vanilla_benign` - Benign prompts without adversarial intent
 
-2. **Judge LLM (RAG + LLaMA)** - Uses RAG with Pinecone vector database to retrieve relevant policies and evaluate compliance
+   Trained on 2 datasets: [nvidia/Aegis-AI-Content-Safety-Dataset-2.0](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) & [allenai/wildjailbreak](https://huggingface.co/datasets/allenai/wildjailbreak)
+
+2. **Judge LLM (RAG + LLaMA)** - Uses RAG with Pinecone vector database to retrieve relevant policies and evaluate compliance via LLaMa prompt engineering.
 
 ## Features
 
@@ -33,7 +42,7 @@ Clean Talk is a two-stage safety evaluation system:
 - ✅ Confidence scores for predictions
 - ✅ FastAPI backend for easy integration
 - ✅ Streamlit web interface
-- ✅ RAG-based policy evaluation (In progress)
+- ✅ RAG-based policy evaluation
 - ✅ Docker support
 
 ## Setup
@@ -42,16 +51,20 @@ Clean Talk is a two-stage safety evaluation system:
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  
 ```
 
-### 2. Install Dependencies
+
+### 2. Set up your environment variables.
+In ```env.example```, fill the given variables.
+
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Prepare the Model
+### 4. Prepare the Model
 
 Train your model by running the notebook:
 ```bash
@@ -65,12 +78,15 @@ models/best_model.pt
 
 Alternatively, download my pre-trained model from this link and place it in the `models/` directory.
 
-### 4. Update Model Path (if needed)
+### 5. Update Model Path (if needed)
 
 In `src/core/classifier.py`, update the `final_model_path` if your model is in a different location:
 ```python
 final_model_path = 'models/best_model.pt'
 ```
+
+### 6. 
+In 03_rag.ipynb, set up pinecone and upsert the policies
 
 ## Usage
 
@@ -222,3 +238,6 @@ Build and run with Docker:
 docker build -t cleantalk .
 docker run -p 8000:8000 -p 8501:8501 cleantalk
 ```
+
+## Remarks
+Project done by Atharshlakshmi Vijayakumar
