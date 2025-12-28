@@ -1,9 +1,9 @@
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent
+
 import torch
 from transformers import AutoModelForSequenceClassification, DistilBertTokenizer
-import sys
-import os 
 
-sys.path.append(os.path.abspath("..")) 
 
 id2label = {0: 'safe',
  1: 'adversarial_harmful',
@@ -19,7 +19,9 @@ label2id = {'safe': 0,
  'unsafe': 4,
  'vanilla_benign': 5}
 
-final_model_path = 'models/best_model.pt'
+
+final_model_path = project_root / 'models' / 'best_model.pt'
+
 model_path = 'google-bert/bert-base-uncased'
 tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,7 +30,7 @@ model = AutoModelForSequenceClassification.from_pretrained(model_path,
                                                            num_labels=len(id2label),
                                                            id2label=id2label,
                                                            label2id=label2id)
-model.load_state_dict(torch.load(final_model_path, map_location=device))
+model.load_state_dict(torch.load(str(final_model_path), map_location=device))
 model.to(device)
 model.eval()
 

@@ -23,10 +23,10 @@ class Logger():
             writer.writeheader()
             
         print(f"Logger initialized. File created at: {self.full_path}")
+    
     def log(self, metrics):
         self.history.append(metrics)
-        
-        # 2. Atomic write to CSV (protects data if training crashes)
+
         with open(self.full_path, mode='a', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=self.headers)
             writer.writerow(metrics)

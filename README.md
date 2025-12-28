@@ -86,7 +86,7 @@ final_model_path = 'models/best_model.pt'
 ```
 
 ### 6. 
-In 03_rag.ipynb, set up pinecone and upsert the policies
+In 03_setup_rag.ipynb, set up pinecone and upsert the policies
 
 ## Usage
 

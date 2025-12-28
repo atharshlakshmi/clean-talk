@@ -13,3 +13,4 @@ streamlit
 pinecone
 sentence-transformers
 openai
+google-genai
