@@ -5,6 +5,9 @@ import json
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
 from google import genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Pinecone
 api_key = os.environ.get("PINECONE_API_KEY")
@@ -23,6 +26,14 @@ if not google_api:
     raise ValueError("GEMINI_API_KEY environment variable not set")
 
 client = genai.Client(api_key=google_api)
+
+def tokenise_upsert(policies):
+    to_upsert = []
+    for p in policies:
+        vector = model.encode(p['text']).tolist()
+        to_upsert.append((p['id'], vector, {"description": p['text']}))
+
+    index.upsert(vectors=to_upsert)
 
 def get_policies(user_prompt):
     try:
@@ -86,6 +97,7 @@ def policy_check(user_prompt):
         relevant_policies = get_policies(user_prompt)
 
         judgement = LLM_judgement(relevant_policies, user_prompt)
+        print(judgement)
         
         # Strip markdown code block formatting if present
         judgement = judgement.strip()

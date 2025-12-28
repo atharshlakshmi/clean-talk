@@ -15,7 +15,7 @@ class APILogger():
                     writer = csv.DictWriter(f, fieldnames=self.headers)
                     writer.writeheader()
             
-      def log(self, endpoint: str, prompt: str, response: dict, status: str = 'success', request_id: str = None):
+      def log(self, endpoint: str, prompt: str, response: dict, status: str, request_id: str = None):
             if request_id is None:
                   request_id = str(uuid.uuid4())[:8]
             
