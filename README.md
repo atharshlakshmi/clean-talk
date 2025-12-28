@@ -32,17 +32,18 @@ Clean Talk is a two-stage safety evaluation system:
    - `unsafe` - Unsafe prompts
    - `vanilla_benign` - Benign prompts without adversarial intent
 
-   Trained on 2 datasets: [nvidia/Aegis-AI-Content-Safety-Dataset-2.0](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) & [allenai/wildjailbreak](https://huggingface.co/datasets/allenai/wildjailbreak)
+   Trained a combination of 2 datasets: [nvidia/Aegis-AI-Content-Safety-Dataset-2.0](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) & [allenai/wildjailbreak](https://huggingface.co/datasets/allenai/wildjailbreak)
 
-2. **Judge LLM (RAG + LLaMA)** - Uses RAG with Pinecone vector database to retrieve relevant policies and evaluate compliance via LLaMa prompt engineering.
+2. **Judge LLM (RAG + Gemini)** - Uses RAG with Pinecone vector database to retrieve relevant policies and evaluate compliance via Google Gemini.
 
 ## Features
 
 - ✅ Real-time prompt classification using DistilBERT
 - ✅ Confidence scores for predictions
 - ✅ FastAPI backend for easy integration
-- ✅ Streamlit web interface
-- ✅ RAG-based policy evaluation
+- ✅ Streamlit web interface with policy management
+- ✅ RAG-based policy evaluation using Pinecone & Google Gemini
+- ✅ Dynamic custom policy creation and storage
 - ✅ Docker support
 
 ## Setup
@@ -56,7 +57,7 @@ source venv/bin/activate
 
 
 ### 2. Set up your environment variables.
-In ```env.example```, fill the given variables.
+Copy `.env.example` to `.env` and fill in the given variables.
 
 ### 3. Install Dependencies
 
@@ -85,8 +86,8 @@ In `src/core/classifier.py`, update the `final_model_path` if your model is in a
 final_model_path = 'models/best_model.pt'
 ```
 
-### 6. 
-In 03_setup_rag.ipynb, set up pinecone and upsert the policies
+### 6. Set up Pinecone RAG
+Run the notebook `notebooks/03_setup_rag.ipynb` to initialize Pinecone and seed initial policies (you can also add policies directly through the Streamlit interface).
 
 ## Usage
 
@@ -97,9 +98,8 @@ Start the FastAPI backend on `http://localhost:8000`:
 python src/api/main.py
 ```
 
-The API will be available at:
+The API will be available at: 
 - **API docs**: http://localhost:8000/docs (Swagger UI)
-- **ReDoc**: http://localhost:8000/redoc
 
 ### Running the Streamlit App
 
@@ -154,15 +154,15 @@ project1/
 │
 ├── src/
 │   ├── api/
-│   │   ├── main.py            # FastAPI application
-│   │   └── dependencies.py    # API dependencies
+│   │   └── main.py            # FastAPI application with /classify, /evaluate, /add_policy endpoints
 │   ├── core/
-│   │   ├── classifier.py      # Model inference logic
-│   │   ├── features.py        # Feature engineering
-│   │   └── safety_rag.py      # RAG for policy evaluation
-│   ├── app.py                 # Streamlit frontend
+│   │   ├── classifier.py      # DistilBERT model inference
+│   │   ├── features.py        # Feature engineering utilities
+│   │   └── safety_rag.py      # RAG pipeline with Pinecone & Gemini
+│   ├── app.py                 # Streamlit frontend with policy management
 │   └── utils/
-│       ├── logger.py          # Custom training logger
+│       ├── api_logger.py      # API request/response logging
+│       ├── logger.py          # Training logger
 │       └── helper.py          # Utility functions
 │
 └── tests/                     # Test suite
@@ -196,10 +196,49 @@ Classify a prompt and return safety classification.
 ```json
 {
   "prompt": "string",
-  "classification": "safe|adversarial_harmful|vanilla_harmful|adversarial_benign|unsafe|vanilla_benign",
-  "confidence": 0.0-1.0
+  "classification": "string",
+  "confidence": "float"
 }
 ```
+
+#### `POST /policy_check`
+Evaluate prompt compliance against stored policies using RAG.
+
+**Request:**
+```json
+{
+  "prompt": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "decision": "string",
+  "policy": "string",
+  "response_to_user": "string"
+}
+```
+
+#### `POST /add_policy`
+Add a new safety policy to the vector database.
+
+**Request:**
+```json
+{
+  "policy": "string"
+}
+```
+
+**Response:**
+```json
+{
+"id": "int", 
+"text": "string", 
+"status": "uploaded"
+}
+```
+
 
 ## Tools & Technologies
 
@@ -216,9 +255,10 @@ Classify a prompt and return safety classification.
 - **Scikit-learn** - ML utilities
 - **Matplotlib & Seaborn** - Visualization
 
-### Future Components
-- **Pinecone** - Vector database for RAG
-- **LLaMA** - Large language model for policy evaluation
+### RAG & LLM
+- **Pinecone** - Vector database for policy storage and retrieval
+- **Sentence-Transformers** - Embedding generation for semantic search
+- **Google Gemini** - LLM for policy evaluation and judgment
 
 ## Training
 

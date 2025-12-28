@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
+from typing import Optional
 import uuid
 import sys
 import os
@@ -13,7 +14,7 @@ load_dotenv()
 # Add src directory to Python path BEFORE imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.safety_rag import policy_check, tokenise_upsert
+from core.safety_rag import policy_check
 from core.classifier import classify_prompt
 from utils.api_logger import APILogger
 
@@ -41,8 +42,8 @@ class ClassificationResponse(BaseModel):
 
 class PolicyCheckResponse(BaseModel):
     decision: str
-    policy: str
-    response_to_user: str
+    policy: Optional[str] = None
+    response_to_user: Optional[str] = None
 
 class Policy(BaseModel):
     policy: str
@@ -77,32 +78,33 @@ def classify(request: PromptRequest):
     
     except Exception as e:
         logger.log('classify', request.prompt, None, 'fail')
-        return {"error": str(e)}, 500
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/policy_check", response_model=PolicyCheckResponse)
-def classify(request: PromptRequest):
+def check_policy(request: PromptRequest):
     """
     Args:
         request: PromptRequest containing the prompt text
         
     Returns:
-        ClassificationResponse with the classification label
+        PolicyCheckResponse with the policy check decision
     """
     
     try:
-        # Get classification from model
         response = policy_check(request.prompt)
         
-        response = PolicyCheckResponse(
+        policy_response = PolicyCheckResponse(
             decision=response['decision'],
             policy=response['policy'],
             response_to_user=response['response_to_user']
         )
         
         logger.log('policy_check', request.prompt, response, 'success')
+        return policy_response
+    
     except Exception as e:
         logger.log('policy_check', request.prompt, None, 'fail')
-        return {"error": str(e)}, 500
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post('/add_policy')
 async def add_policy(policy: Policy):
@@ -114,7 +116,7 @@ async def add_policy(policy: Policy):
         return {"id": policy_id, "text": policy.policy, "status": "uploaded"}
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        raise HTTPException(status_code=500, detail=str(e))
     
 if __name__ == "__main__":
     import uvicorn

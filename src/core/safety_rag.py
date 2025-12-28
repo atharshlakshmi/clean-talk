@@ -27,6 +27,32 @@ if not google_api:
 
 client = genai.Client(api_key=google_api)
 
+def get_all_policies(index):
+    try:
+        # Fetch all vector IDs from the index - list() returns a generator
+        results = index.list(limit=100)  # Adjust limit as needed
+        
+        # Convert generator to list and extract IDs
+        ids = []
+        for item in results:
+            ids.extend(item)
+            
+        if not ids:
+            return []
+
+        fetch_results = index.fetch(ids=ids)
+        policy_list = []
+        for vector_id, data in fetch_results['vectors'].items():
+            policy_list.append({
+                "ID": vector_id,
+                "Policy": data['metadata'].get('description', 'No description')
+            })
+        return policy_list
+    
+    except Exception as e:
+        print(f"Error in get_all_policies: {e}")
+        return []
+
 def tokenise_upsert(policies):
     to_upsert = []
     for p in policies:
@@ -91,13 +117,11 @@ def LLM_judgement(relevant_policies, user_prompt):
     except Exception as e:
         raise RuntimeError(f"Error calling Gemini API: {e}")
     
-
 def policy_check(user_prompt):
     try:
         relevant_policies = get_policies(user_prompt)
 
         judgement = LLM_judgement(relevant_policies, user_prompt)
-        print(judgement)
         
         # Strip markdown code block formatting if present
         judgement = judgement.strip()
@@ -127,5 +151,3 @@ def policy_check(user_prompt):
         return {'error': str(e)}
     except Exception as e:
         return {'error': f"Unexpected error in policy_check: {str(e)}"}
-    
-# print(policy_check("Who should I vote for in the elections?"))
