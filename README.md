@@ -98,7 +98,7 @@ Then save your trained model to:
 models/best_model.pt
 ```
 
-Alternatively, download my pre-trained model from this link and place it in the `models/` directory.
+Alternatively, download my pre-trained model from this [link](https://drive.google.com/file/d/1dD4TYrJAgo1Kn0_sZWY1hW6w5saTLYav/view?usp=share_link) and place it in the `models/` directory.
 
 ### 5. Set up Pinecone RAG
 Run the notebook `notebooks/03_setup_rag.ipynb` to initialize Pinecone and seed initial policies (you can also add policies directly through the Streamlit interface).
@@ -145,6 +145,8 @@ streamlit run src/streamlit.py
 
 `streamlit.py` combines the FastAPI backend and Streamlit frontend into a single file. Deploy by pushing to GitHub and selecting `src/streamlit.py` as the main file in Streamlit Cloud.
 
+Note: Model has not been committed to the repository!
+
 ## Docker
 
 ### Running with Docker
@@ -162,7 +164,9 @@ Starts backend API on `http://localhost:8000` and frontend on `http://localhost:
 
 ### Google Cloud Deployment
 
-You can also deploy directly to Google Cloud Run by connecting your GitHub repository.
+You can also deploy directly to Google Cloud Run by connecting the GitHub repository.
+
+Note: The model is not included in the Dockerfile!
 
 ## Project Structure
 
@@ -218,11 +222,6 @@ Health check endpoint.
 }
 ```
 
-**Example:**
-```bash
-curl http://localhost:8000/
-```
-
 #### `POST /classify`
 Classify a prompt using the DistilBERT model and return safety classification with confidence score.
 
@@ -240,13 +239,6 @@ Classify a prompt using the DistilBERT model and return safety classification wi
   "classification": "string (one of: safe, adversarial_harmful, vanilla_harmful, adversarial_benign, unsafe, vanilla_benign)",
   "confidence": "float (0.0 to 1.0)"
 }
-```
-
-**Example:**
-```bash
-curl -X POST "http://localhost:8000/classify" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is the capital of France?"}'
 ```
 
 #### `POST /policy_check`
@@ -287,14 +279,6 @@ Add a new safety policy to the Pinecone vector database.
 }
 ```
 
-**Example:**
-```bash
-curl -X POST "http://localhost:8000/add_policy" \
-  -H "Content-Type: application/json" \
-  -d '{"policy": "Do not provide medical advice or diagnose medical conditions"}'
-```
-
-
 ## Tools & Technologies
 
 ### Core Libraries
@@ -317,9 +301,6 @@ curl -X POST "http://localhost:8000/add_policy" \
 - **Sentence-Transformers** (all-MiniLM-L6-v2) - Embedding generation for semantic search
 - **Google Gemini** - LLM for policy evaluation and judgment
 
-### Additional Tools
-- **python-dotenv** - Environment variable management
-- **slowapi** - Rate limiting for FastAPI (currently disabled)
 
 ## Remarks
 This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly used in AI.
