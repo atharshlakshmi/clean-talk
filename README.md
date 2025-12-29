@@ -1,15 +1,14 @@
 # Clean Talk: Guardrail API
 
-A safety guardrail system that classifies prompts and evaluates policy compliance. Takes a prompt and determines if it's safe or attempting a jailbreak, then retrieves relevant policies and judges whether the content complies with safety guidelines.
+A safety guardrail system that classifies prompts and evaluates policy compliance. Takes a prompt and determines if it's safe or attempting a jailbreak, then retrieves relevant policies and judges whether the content complies with safety or usage guidelines to reduce off-topic prompts.
 
 Possible use cases: 
 1. Preventing misuse of AI chatbots by limiting filtering prompts sent to the LLM.
-2. Moderating ChatBot behaviour by setting rules that dynamically get included in the prompts.
-Benefits: Reduce wastage in computes and misuse of AI tools.
+2. Moderating ChatBot behaviour by filtering prompts using chosen policies.
 
-This project has been deployed on Streamlit! Try out the implementation [here.]()
+(add video here)
 
-Note: This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly use in AI.
+Note: This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly used in AI.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -32,7 +31,7 @@ Clean Talk is a two-stage safety evaluation system:
    - `unsafe` - Unsafe prompts
    - `vanilla_benign` - Benign prompts without adversarial intent
 
-   Trained a combination of 2 datasets: [nvidia/Aegis-AI-Content-Safety-Dataset-2.0](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) & [allenai/wildjailbreak](https://huggingface.co/datasets/allenai/wildjailbreak)
+   Trained on a combination of these 2 datasets: [nvidia/Aegis-AI-Content-Safety-Dataset-2.0](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) & [allenai/wildjailbreak](https://huggingface.co/datasets/allenai/wildjailbreak)
 
 2. **Judge LLM (RAG + Gemini)** - Uses RAG with Pinecone vector database to retrieve relevant policies and evaluate compliance via Google Gemini.
 
@@ -91,6 +90,13 @@ Run the notebook `notebooks/03_setup_rag.ipynb` to initialize Pinecone and seed 
 
 ## Usage
 
+### Prerequisites
+Before running the application, ensure:
+1. The trained model is saved at `models/best_model.pt`
+2. All environment variables are configured in `.env`
+3. Pinecone is initialized and the `safety-policies` index is created (see notebook `03_setup_rag.ipynb`)
+4. Google Gemini API key is set up and valid
+
 ### Running the API
 
 Start the FastAPI backend on `http://localhost:8000`:
@@ -98,17 +104,28 @@ Start the FastAPI backend on `http://localhost:8000`:
 python src/api/main.py
 ```
 
-The API will be available at: 
-- **API docs**: http://localhost:8000/docs (Swagger UI)
+The API will be available at: http://localhost:8000/docs (Swagger UI)
+
+Alternatively, using uvicorn directly:
+```bash
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
 
 ### Running the Streamlit App
 
-In a new terminal, start the Streamlit frontend:
+In a new terminal (ensure API is running), start the Streamlit frontend:
 ```bash
 streamlit run src/app.py
 ```
 
 The app will be available at: http://localhost:8501
+
+**Features:**
+- **Prompt Classification** - Enter a prompt to get instant safety classification
+- **Sample Prompts** - Choose from pre-loaded test prompts to explore the system
+- **Policy Management** - Add new safety policies via the sidebar
+- **Current Policies** - View all stored policies
+- **Policy Compliance Check** - Automatically validates prompts against stored policies using RAG
 
 ### Using the API Directly
 
@@ -136,7 +153,7 @@ curl -X POST "http://localhost:8000/classify" \
 ## Project Structure
 
 ```
-project1/
+clean-talk/
 ├── Dockerfile                 # Docker configuration
 ├── README.md                  # This file
 ├── requirements.txt           # Python dependencies            
@@ -147,14 +164,16 @@ project1/
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb   # EDA and data analysis
 │   ├── 02_training.ipynb           # Model training
+│   └── 03_setup_rag.ipynb          # Pinecone DB set up
 │
 ├── reports/
-│   └── experiment_logs/       # Training logs and metrics
-│   └── diagrams/              # Training metrics visualisation
+│   ├── experiment_logs/       # Training logs and metrics
+│   ├── diagrams/              # Training metrics visualisation
+│   └── api_log.csv            # Log of all API requests 
 │
-├── src/
+└── src/
 │   ├── api/
-│   │   └── main.py            # FastAPI application with /classify, /evaluate, /add_policy endpoints
+│   │   └── main.py            # FastAPI application
 │   ├── core/
 │   │   ├── classifier.py      # DistilBERT model inference
 │   │   ├── features.py        # Feature engineering utilities
@@ -183,7 +202,7 @@ Health check endpoint.
 ```
 
 #### `POST /classify`
-Classify a prompt and return safety classification.
+Classify a prompt using the DistilBERT model and return safety classification with confidence score.
 
 **Request:**
 ```json
@@ -196,13 +215,20 @@ Classify a prompt and return safety classification.
 ```json
 {
   "prompt": "string",
-  "classification": "string",
-  "confidence": "float"
+  "classification": "string (one of: safe, adversarial_harmful, vanilla_harmful, adversarial_benign, unsafe, vanilla_benign)",
+  "confidence": "float (0.0 to 1.0)"
 }
 ```
 
+**Example:**
+```bash
+curl -X POST "http://localhost:8000/classify" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "What is the capital of France?"}'
+```
+
 #### `POST /policy_check`
-Evaluate prompt compliance against stored policies using RAG.
+Evaluate prompt compliance against stored policies using RAG (Retrieval-Augmented Generation). Uses Pinecone to retrieve relevant policies and Google Gemini to evaluate compliance.
 
 **Request:**
 ```json
@@ -214,14 +240,16 @@ Evaluate prompt compliance against stored policies using RAG.
 **Response:**
 ```json
 {
-  "decision": "string",
-  "policy": "string",
-  "response_to_user": "string"
+  "decision": "string (VIOLATION or NOT A VIOLATION)",
+  "policy": "string (the relevant policy that was checked)",
+  "response_to_user": "string (detailed explanation)"
 }
 ```
 
+**Note:** This endpoint is typically called only for prompts classified as safe by the `/classify` endpoint.
+
 #### `POST /add_policy`
-Add a new safety policy to the vector database.
+Add a new safety policy to the Pinecone vector database. The policy is encoded using sentence-transformers and stored with semantic search capability.
 
 **Request:**
 ```json
@@ -233,10 +261,17 @@ Add a new safety policy to the vector database.
 **Response:**
 ```json
 {
-"id": "int", 
-"text": "string", 
-"status": "uploaded"
+  "id": "string",
+  "text": "string",
+  "status": "uploaded"
 }
+```
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8000/add_policy" \
+  -H "Content-Type: application/json" \
+  -d '{"policy": "Do not provide medical advice or diagnose medical conditions"}'
 ```
 
 
@@ -248,17 +283,23 @@ Add a new safety policy to the vector database.
 - **DistilBERT** - Fast, lightweight BERT model
 - **FastAPI** - Modern web framework
 - **Streamlit** - Interactive web app framework
-- **Uvicorn** - ASGI server
+- **Uvicorn** - ASGI server for FastAPI
 
 ### Data & ML
 - **Pandas** - Data manipulation
 - **Scikit-learn** - ML utilities
 - **Matplotlib & Seaborn** - Visualization
+- **Datasets** - Hugging Face datasets library for loading training data
+
 
 ### RAG & LLM
 - **Pinecone** - Vector database for policy storage and retrieval
-- **Sentence-Transformers** - Embedding generation for semantic search
+- **Sentence-Transformers** (all-MiniLM-L6-v2) - Embedding generation for semantic search
 - **Google Gemini** - LLM for policy evaluation and judgment
+
+### Additional Tools
+- **python-dotenv** - Environment variable management
+- **slowapi** - Rate limiting for FastAPI (currently disabled)
 
 ## Training
 
@@ -278,6 +319,14 @@ Build and run with Docker:
 docker build -t cleantalk .
 docker run -p 8000:8000 -p 8501:8501 cleantalk
 ```
+
+**Note:** The Dockerfile needs to be created or populated with proper configuration to run the application containerized.
+
+## Testing
+
+A test suite structure exists in the `tests/` folder for unit and integration tests. Currently, the suite is empty and ready for test implementation.
+
+To add tests, create test files in the `tests/` folder following pytest conventions.
 
 ## Remarks
 Project done by Atharshlakshmi Vijayakumar

@@ -1,0 +1,24 @@
+# Use a slim image to save space
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies (needed for some ML libraries)
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy only the necessary code and model
+COPY src/core ./src/core
+COPY src/utils ./src/utils
+COPY src/api ./src/api
+COPY models/best_model.pt ./models/best_model.pt
+
+# Set environment variable for Python path
+ENV PYTHONPATH=/app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

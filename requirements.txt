@@ -14,3 +14,4 @@ pinecone
 sentence-transformers
 google-genai
 python-dotenv
+slowapi

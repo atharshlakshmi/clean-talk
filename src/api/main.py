@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
@@ -8,6 +8,9 @@ import uuid
 import sys
 import os
 from dotenv import load_dotenv
+# from slowapi import Limiter, _rate_limit_exceeded_handler
+# from slowapi.util import get_remote_address
+# from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
@@ -32,6 +35,10 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 logger = APILogger()
 app = FastAPI(title="Clean Talk - Guardrail API", version="1.0.0")
 
+# limiter = Limiter(key_func=get_remote_address)
+# app.state.limiter = limiter
+# app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 class PromptRequest(BaseModel):
     prompt: str
 
@@ -49,11 +56,13 @@ class Policy(BaseModel):
     policy: str
 
 @app.get("/")
+# @limiter.limit("100/minute")
 def read_root():
     """Health check endpoint"""
     return {"message": "Prompt Classification API is running"}
 
 @app.post("/classify", response_model=ClassificationResponse)
+# @limiter.limit("30/minute")
 def classify(request: PromptRequest):
     """
     Args:
@@ -81,6 +90,7 @@ def classify(request: PromptRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/policy_check", response_model=PolicyCheckResponse)
+# @limiter.limit("30/minute")
 def check_policy(request: PromptRequest):
     """
     Args:
@@ -107,6 +117,7 @@ def check_policy(request: PromptRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post('/add_policy')
+# @limiter.limit("10/minute")
 async def add_policy(policy: Policy):
     try: 
         policy_id = str(uuid.uuid4())[:8]
