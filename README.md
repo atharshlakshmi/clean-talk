@@ -51,7 +51,7 @@ The DistilBERT classifier was trained with strong performance metrics:
 ### Confusion Matrix
 The model shows excellent performance across all 6 safety categories:
 
-![Confusion Matrix - Clean-Talk Guardrail](./reports/diagrams/confusion_matrix.png)
+![Confusion Matrix - Clean-Talk Guardrail](./reports/diagrams/Confusion_Matrix.png)
 
 - Strong diagonal values indicate high accuracy per class
 - Clear distinction between safety categories
