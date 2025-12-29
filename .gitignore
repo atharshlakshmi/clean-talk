@@ -1,5 +1,6 @@
 # Secret keys
 .env
+.env.cloud
 
 # Environment file
 venv

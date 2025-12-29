@@ -6,9 +6,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy frontend code and shared utilities
-COPY src/app.py ./src/app.py
-COPY src/utils ./src/utils
-COPY src/core ./src/core
+COPY src/ ./src/
+COPY reports/ ./reports/
 
 ENV PYTHONPATH=/app
 

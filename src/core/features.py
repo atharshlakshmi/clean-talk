@@ -52,7 +52,7 @@ def merge_data(aegis, jailbreak):
     min_class_size = combined['label'].value_counts().min()
 
     balanced_df = combined.groupby('label', group_keys=False)[['prompt', 'label']].apply(
-        lambda x: x.sample(3000, random_state=42)
+        lambda x: x.sample(5000, random_state=42)
     ).reset_index(drop=True)
 
 

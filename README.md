@@ -8,16 +8,17 @@ Possible use cases:
 
 (add video here)
 
-Note: This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly used in AI.
-
 ## Table of Contents
 - [Overview](#overview)
+- [Model Performance](#model-performance)
 - [Features](#features)
 - [Setup](#setup)
 - [Usage](#usage)
+- [Docker & Deployment](#docker--deployment)
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
 - [Tools & Technologies](#tools--technologies)
+- [Remarks](#remarks)
 
 ## Overview
 
@@ -34,6 +35,27 @@ Clean Talk is a two-stage safety evaluation system:
    Trained on a combination of these 2 datasets: [nvidia/Aegis-AI-Content-Safety-Dataset-2.0](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) & [allenai/wildjailbreak](https://huggingface.co/datasets/allenai/wildjailbreak)
 
 2. **Judge LLM (RAG + Gemini)** - Uses RAG with Pinecone vector database to retrieve relevant policies and evaluate compliance via Google Gemini.
+
+## Model Performance
+
+### Training Results
+The DistilBERT classifier was trained with strong performance metrics:
+
+![Training Results - Loss Curves and Metric Performance](./reports/diagrams/validation_0.png)
+
+- **Final Accuracy:** 82% on validation set
+- **Final F1 Score:** 82% 
+- **Training Loss:** Converged from 0.84 → 0.47
+- **Learning Rate:** 5e-05, Max Epoch: 5
+
+### Confusion Matrix
+The model shows excellent performance across all 6 safety categories:
+
+![Confusion Matrix - Clean-Talk Guardrail](./reports/diagrams/confusion_matrix.png)
+
+- Strong diagonal values indicate high accuracy per class
+- Clear distinction between safety categories
+- Few misclassifications across categories
 
 ## Features
 
@@ -78,24 +100,10 @@ models/best_model.pt
 
 Alternatively, download my pre-trained model from this link and place it in the `models/` directory.
 
-### 5. Update Model Path (if needed)
-
-In `src/core/classifier.py`, update the `final_model_path` if your model is in a different location:
-```python
-final_model_path = 'models/best_model.pt'
-```
-
-### 6. Set up Pinecone RAG
+### 5. Set up Pinecone RAG
 Run the notebook `notebooks/03_setup_rag.ipynb` to initialize Pinecone and seed initial policies (you can also add policies directly through the Streamlit interface).
 
 ## Usage
-
-### Prerequisites
-Before running the application, ensure:
-1. The trained model is saved at `models/best_model.pt`
-2. All environment variables are configured in `.env`
-3. Pinecone is initialized and the `safety-policies` index is created (see notebook `03_setup_rag.ipynb`)
-4. Google Gemini API key is set up and valid
 
 ### Running the API
 
@@ -127,34 +135,30 @@ The app will be available at: http://localhost:8501
 - **Current Policies** - View all stored policies
 - **Policy Compliance Check** - Automatically validates prompts against stored policies using RAG
 
-### Using the API Directly
+## Docker
 
-**Health Check:**
+### Running with Docker
+
 ```bash
-curl http://localhost:8000/
+docker-compose up --build
 ```
 
-**Classify a Prompt:**
-```bash
-curl -X POST "http://localhost:8000/classify" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is the capital of France?"}'
-```
+Starts backend API on `http://localhost:8000` and frontend on `http://localhost:8501`.
 
-**Response:**
-```json
-{
-  "prompt": "What is the capital of France?",
-  "classification": "safe",
-  "confidence": 0.95
-}
-```
+**Docker Files:**
+- `Dockerfile.api` - Backend FastAPI container
+- `Dockerfile.app` - Frontend Streamlit container
+- `docker-compose.yml` - Orchestrates both services
 
 ## Project Structure
 
 ```
 clean-talk/
-├── Dockerfile                 # Docker configuration
+├── Dockerfile.api             # Backend API container configuration
+├── Dockerfile.app             # Frontend Streamlit container configuration
+├── docker-compose.yml         # Docker Compose orchestration (runs both services)
+├── .dockerignore              # Files excluded from Docker containers
+│
 ├── README.md                  # This file
 ├── requirements.txt           # Python dependencies            
 │
@@ -172,19 +176,17 @@ clean-talk/
 │   └── api_log.csv            # Log of all API requests 
 │
 └── src/
-│   ├── api/
-│   │   └── main.py            # FastAPI application
-│   ├── core/
-│   │   ├── classifier.py      # DistilBERT model inference
-│   │   ├── features.py        # Feature engineering utilities
-│   │   └── safety_rag.py      # RAG pipeline with Pinecone & Gemini
-│   ├── app.py                 # Streamlit frontend with policy management
-│   └── utils/
-│       ├── api_logger.py      # API request/response logging
-│       ├── logger.py          # Training logger
-│       └── helper.py          # Utility functions
-│
-└── tests/                     # Test suite
+    ├── api/
+    │   └── main.py            # FastAPI application
+    ├── core/
+    │   ├── classifier.py      # DistilBERT model inference
+    │   ├── features.py        # Feature engineering utilities
+    │   └── safety_rag.py      # RAG pipeline with Pinecone & Gemini
+    ├── app.py                 # Streamlit frontend with policy management
+    └── utils/
+        ├── api_logger.py      # API request/response logging
+        ├── logger.py          # Training logger
+        └── helper.py          # Utility functions
 ```
 
 ## API Documentation
@@ -199,6 +201,11 @@ Health check endpoint.
 {
   "message": "Prompt Classification API is running"
 }
+```
+
+**Example:**
+```bash
+curl http://localhost:8000/
 ```
 
 #### `POST /classify`
@@ -228,7 +235,7 @@ curl -X POST "http://localhost:8000/classify" \
 ```
 
 #### `POST /policy_check`
-Evaluate prompt compliance against stored policies using RAG (Retrieval-Augmented Generation). Uses Pinecone to retrieve relevant policies and Google Gemini to evaluate compliance.
+Evaluate prompt compliance against stored policies using RAG (Retrieval-Augmented Generation). 
 
 **Request:**
 ```json
@@ -246,10 +253,8 @@ Evaluate prompt compliance against stored policies using RAG (Retrieval-Augmente
 }
 ```
 
-**Note:** This endpoint is typically called only for prompts classified as safe by the `/classify` endpoint.
-
 #### `POST /add_policy`
-Add a new safety policy to the Pinecone vector database. The policy is encoded using sentence-transformers and stored with semantic search capability.
+Add a new safety policy to the Pinecone vector database. 
 
 **Request:**
 ```json
@@ -301,32 +306,5 @@ curl -X POST "http://localhost:8000/add_policy" \
 - **python-dotenv** - Environment variable management
 - **slowapi** - Rate limiting for FastAPI (currently disabled)
 
-## Training
-
-To train or fine-tune the model:
-
-1. Open `notebooks/02_training.ipynb`
-2. Run the training notebook
-3. Save the best model to `models/best_model.pt`
-
-Training metrics and logs are saved to `reports/experiment_logs/`
-
-## Docker
-
-Build and run with Docker:
-
-```bash
-docker build -t cleantalk .
-docker run -p 8000:8000 -p 8501:8501 cleantalk
-```
-
-**Note:** The Dockerfile needs to be created or populated with proper configuration to run the application containerized.
-
-## Testing
-
-A test suite structure exists in the `tests/` folder for unit and integration tests. Currently, the suite is empty and ready for test implementation.
-
-To add tests, create test files in the `tests/` folder following pytest conventions.
-
 ## Remarks
-Project done by Atharshlakshmi Vijayakumar
+This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly used in AI.

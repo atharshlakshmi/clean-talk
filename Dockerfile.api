@@ -11,10 +11,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only the necessary code and model
-COPY src/core ./src/core
-COPY src/utils ./src/utils
-COPY src/api ./src/api
+COPY src/ ./src/
 COPY models/best_model.pt ./models/best_model.pt
+COPY reports/ ./reports/
 
 # Set environment variable for Python path
 ENV PYTHONPATH=/app

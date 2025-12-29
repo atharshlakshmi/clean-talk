@@ -18,5 +18,7 @@ services:
       - "8501:8501"
     depends_on:
       - backend
+    env_file:
+      - .env
     environment:
       - BACKEND_URL=http://backend:8000

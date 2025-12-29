@@ -1,5 +1,4 @@
 notebooks/
-reports/
 tests/
 __pycache__/
 *.ipynb
