@@ -160,6 +160,10 @@ Starts backend API on `http://localhost:8000` and frontend on `http://localhost:
 - `Dockerfile.app` - Frontend Streamlit container
 - `docker-compose.yml` - Orchestrates both services
 
+### Google Cloud Deployment
+
+You can also deploy directly to Google Cloud Run by connecting your GitHub repository.
+
 ## Project Structure
 
 ```

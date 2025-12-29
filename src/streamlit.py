@@ -154,7 +154,7 @@ with st.sidebar:
             
             if policies:
                 for policy in policies:
-                    st.button(policy['Policy'], use_container_width=True)
+                    st.button(f'{policy['Policy']}', use_container_width=True)
             else:
                 st.info("No policies added yet.")
         except Exception as e:
