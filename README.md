@@ -135,6 +135,16 @@ The app will be available at: http://localhost:8501
 - **Current Policies** - View all stored policies
 - **Policy Compliance Check** - Automatically validates prompts against stored policies using RAG
 
+### Streamlit Cloud Deployment
+
+For deployment to [Streamlit Cloud](https://streamlit.io/cloud) without a separate backend:
+
+```bash
+streamlit run src/streamlit.py
+```
+
+`streamlit.py` combines the FastAPI backend and Streamlit frontend into a single file. Deploy by pushing to GitHub and selecting `src/streamlit.py` as the main file in Streamlit Cloud.
+
 ## Docker
 
 ### Running with Docker
@@ -182,7 +192,8 @@ clean-talk/
     │   ├── classifier.py      # DistilBERT model inference
     │   ├── features.py        # Feature engineering utilities
     │   └── safety_rag.py      # RAG pipeline with Pinecone & Gemini
-    ├── app.py                 # Streamlit frontend with policy management
+    ├── app.py                 # Streamlit frontend with separate backend
+    ├── streamlit.py           # Streamlit with integrated API (for Cloud deployment)
     └── utils/
         ├── api_logger.py      # API request/response logging
         ├── logger.py          # Training logger

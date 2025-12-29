@@ -1,3 +1,5 @@
+# ONLY FRONTEND
+
 import requests
 import streamlit as st
 from core.safety_rag import get_all_policies, index
