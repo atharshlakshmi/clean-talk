@@ -41,7 +41,9 @@ Clean Talk is a two-stage safety evaluation system:
 ### Training Results
 The DistilBERT classifier was trained with strong performance metrics:
 
-![Training Results - Loss Curves and Metric Performance](./reports/diagrams/validation_0.png)
+<div align="center">
+  <img src="./reports/diagrams/validation_0.png" width="400" alt="Training Results - Loss Curves and Metric Performance">
+</div>
 
 - **Final Accuracy:** 82% on validation set
 - **Final F1 Score:** 82% 
@@ -51,7 +53,9 @@ The DistilBERT classifier was trained with strong performance metrics:
 ### Confusion Matrix
 The model shows excellent performance across all 6 safety categories:
 
-![Confusion Matrix - Clean-Talk Guardrail](./reports/diagrams/Confusion_Matrix.png)
+<div align="center">
+  <img src="./reports/diagrams/Confusion_Matrix.png" width="400" alt="Confusion Matrix - Clean-Talk Guardrail">
+</div>
 
 - Strong diagonal values indicate high accuracy per class
 - Clear distinction between safety categories
