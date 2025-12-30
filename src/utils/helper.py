@@ -53,5 +53,33 @@ def length_aware_sample(df, target_size):
         
     return pd.concat(balanced_chunks).sample(frac=1, random_state=42).reset_index(drop=True)
 
+def get_all_policies(index):
+    try:
+        # Fetch all vector IDs from the index - list() returns a generator
+        results = index.list(limit=100)  # Adjust limit as needed
+        
+        # Convert generator to list and extract IDs
+        ids = []
+        for item in results:
+            ids.extend(item)
+            
+        if not ids:
+            return []
 
+        fetch_results = index.fetch(ids=ids)
+        policy_list = []
+        for vector_id, data in fetch_results['vectors'].items():
+            policy_list.append({
+                "ID": vector_id,
+                "Policy": data['metadata'].get('description', 'No description')
+            })
+        return policy_list
+    
+    except Exception as e:
+        print(f"Error in get_all_policies: {e}")
+        return []
+
+def remove_policies(ids: list, index):
+    index.delete(ids=ids, namespace='__default__')
+    return
 

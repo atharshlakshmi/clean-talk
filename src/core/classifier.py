@@ -3,6 +3,7 @@ project_root = Path(__file__).parent.parent.parent
 
 import torch
 from transformers import AutoModelForSequenceClassification, DistilBertTokenizer
+from huggingface_hub import hf_hub_download
 
 
 id2label = {0: 'safe',
@@ -19,18 +20,23 @@ label2id = {'safe': 0,
  'unsafe': 4,
  'vanilla_benign': 5}
 
+# Local Model Loading
+# model_path = project_root / 'models' / 'best_model.pt'
 
-final_model_path = project_root / 'models' / 'best_model.pt'
+# To download from HF
+model_repo = "atharshlakshmi/clean-talk"
+model_filename = "best_model.pt"
+model_path = hf_hub_download(repo_id=model_repo, filename=model_filename)
 
-model_path = 'google-bert/bert-base-uncased'
 tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-model = AutoModelForSequenceClassification.from_pretrained(model_path,
+model = AutoModelForSequenceClassification.from_pretrained('google-bert/bert-base-uncased',
                                                            num_labels=len(id2label),
                                                            id2label=id2label,
                                                            label2id=label2id)
-model.load_state_dict(torch.load(str(final_model_path), map_location=device))
+
+model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device)
 model.eval()
 
@@ -50,3 +56,4 @@ def classify_prompt(prompt_text):
         probabilities = torch.softmax(logits, dim=0)
         confidence_score = probabilities[predicted_label_id].item()
         return id2label[predicted_label_id], confidence_score
+    

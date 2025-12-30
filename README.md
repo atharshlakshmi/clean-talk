@@ -88,17 +88,10 @@ pip install -r requirements.txt
 
 ### 4. Prepare the Model
 
-Train your model by running the notebook:
-```bash
-jupyter notebook notebooks/02_training.ipynb
-```
+The model is automatically downloaded from [Hugging Face Hub](https://huggingface.co/atharshlakshmi/clean-talk) on first run and cached locally.
 
-Then save your trained model to:
-```
-models/best_model.pt
-```
-
-Alternatively, download my pre-trained model from this [link](https://drive.google.com/file/d/1dD4TYrJAgo1Kn0_sZWY1hW6w5saTLYav/view?usp=share_link) and place it in the `models/` directory.
+**To train your own model:**
+Run `notebooks/02_training.ipynb`. You can either upload to Hugging Face and update the model reference in `src/core/classifier.py`, or store it locally in `models/best_model.pt`.
 
 ### 5. Set up Pinecone RAG
 Run the notebook `notebooks/03_setup_rag.ipynb` to initialize Pinecone and seed initial policies (you can also add policies directly through the Streamlit interface).
@@ -145,7 +138,6 @@ streamlit run src/streamlit.py
 
 `streamlit.py` combines the FastAPI backend and Streamlit frontend into a single file. Deploy by pushing to GitHub and selecting `src/streamlit.py` as the main file in Streamlit Cloud.
 
-Note: Model has not been committed to the repository!
 
 ## Docker
 
@@ -166,7 +158,6 @@ Starts backend API on `http://localhost:8000` and frontend on `http://localhost:
 
 You can also deploy directly to Google Cloud Run by connecting the GitHub repository.
 
-Note: The model is not included in the Dockerfile!
 
 ## Project Structure
 

@@ -1,6 +1,6 @@
-# BACKEND FOR STREAMLIT
+# BACKEND
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Add src directory to Python path BEFORE imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.safety_rag import policy_check

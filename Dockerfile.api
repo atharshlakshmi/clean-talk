@@ -12,7 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only the necessary code and model
 COPY src/ ./src/
-COPY models/best_model.pt ./models/best_model.pt
 COPY reports/ ./reports/
 
 # Set environment variable for Python path
