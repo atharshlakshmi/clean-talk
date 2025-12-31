@@ -8,6 +8,7 @@ Possible use cases:
 
 <video controls width="100%" height="auto">
   <source src="reports/Clean%20Talk%20Demo.mov" type="video/quicktime">
+  Clean Talk Demo Video
 </video>
 
 ## Table of Contents
