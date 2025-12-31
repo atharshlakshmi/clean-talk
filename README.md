@@ -6,7 +6,7 @@ Possible use cases:
 1. Preventing misuse of AI chatbots by limiting filtering prompts sent to the LLM.
 2. Moderating ChatBot behaviour by filtering prompts using chosen policies.
 
-<video src="reports/Clean Talk Demo.mov" controls></video>
+![](reports/Clean-Talk-Demo.gif)
 
 
 ## Table of Contents
