@@ -49,7 +49,7 @@ def clean_aegis(test, train):
 
 def merge_data(aegis, jailbreak):
     combined = pd.concat([aegis, jailbreak])
-    min_class_size = combined['label'].value_counts().min()
+    # min_class_size = combined['label'].value_counts().min()
 
     balanced_df = combined.groupby('label', group_keys=False)[['prompt', 'label']].apply(
         lambda x: x.sample(5000, random_state=42)

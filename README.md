@@ -298,4 +298,4 @@ Add a new safety policy to the Pinecone vector database.
 
 
 ## Remarks
-This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly used in AI.
+This is an exploratory project. The aim of this project is to learn tools and frameworks that are commonly used in AI projects.
